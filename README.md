@@ -1,6 +1,6 @@
-# academy-core · backend foundation
+# Waruna Academy · backend foundation
 
-Internal backend for Waruna Rathnayaka’s academy. Use `academy-core` and role names (academy owner, development operator) in project reports and tasks. The dedicated development tenant is confirmed; the public name, domain and production tenancy are not. This repository contains a TypeScript server API and Supabase/PostgreSQL migrations for **one** academy. It has no frontend and no enabled external provider. The [supplied Master Technical Architecture V2.0](docs/spec/master-architecture-v2.txt) is the primary specification.
+Waruna Academy is the project-facing name; `academy-core` remains the internal identifier. Only the dedicated development tenant is confirmed, not a public domain or production tenancy. This repository contains a TypeScript server API and Supabase/PostgreSQL migrations for **one** academy. It has no frontend and no enabled external provider. The [supplied Master Technical Architecture V2.0](docs/spec/master-architecture-v2.txt) is the primary specification.
 
 **Start here:** [current development commissioning status and recovery gate](docs/development-commissioning.md) · [original foundation report](docs/foundation-report.md) · [API contracts](docs/api.md) · [local setup, security and commissioning](docs/security-operations.md).
 
@@ -13,7 +13,7 @@ npm ci
 npm run check
 ```
 
-This runs ESLint, formatting checks, strict TypeScript checks, synthetic tests and generated-document drift checks. Tests start a disposable loopback PostgreSQL 17 cluster from a pinned development dependency, apply **all six migrations**, exercise RLS as actual restricted database roles, and remove the cluster. Auth claims and the managed Storage schema/transport are fixtures, **not** a hosted Auth or Storage verification. There is no test switch for connecting to a live database.
+This runs ESLint, formatting checks, strict TypeScript checks, synthetic tests and generated-document drift checks. Tests start a disposable PostgreSQL 17 cluster from a pinned development dependency, apply **all six migrations**, exercise RLS as restricted database roles, and remove the cluster. On POSIX the fixture uses a private Unix socket with no TCP listener; Windows uses authenticated loopback. This fixture is not a recovery tool. Auth claims and the managed Storage schema/transport are fixtures, **not** a hosted Auth or Storage verification. There is no test switch for connecting to a live database.
 
 | Task | Command |
 |---|---|

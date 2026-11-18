@@ -5,7 +5,7 @@ import { createHandler } from '../src/platform/http.js';
 import { SupabaseGateway, type Gateway } from '../src/platform/supabase.js';
 import { MinuteLimiter } from '../src/platform/limiter.js';
 import { ApiError } from '../src/platform/errors.js';
-import { readConfig } from '../src/platform/config.js';
+import { devSupabaseOrigin, readConfig } from '../src/platform/config.js';
 import {
   adapterFor,
   capabilities,
@@ -297,12 +297,40 @@ describe('Supabase HTTP adapter with synthetic transports (no hosted calls)', ()
 
 describe('Server-only environment validation', () => {
   const env = {
-    SUPABASE_URL: config.supabase,
+    SUPABASE_URL: devSupabaseOrigin,
     API_ORIGIN: config.origin,
     SUPABASE_PUBLISHABLE_KEY: config.key,
   };
+  it('only accepts the commissioned remote tenant, retaining loopback for local development', () => {
+    for (const mode of [{}, { NODE_ENV: 'production' }, { VERCEL: '1' }]) {
+      assert.equal(readConfig({ ...env, ...mode }).supabase, devSupabaseOrigin);
+      for (const SUPABASE_URL of [
+        'https://other.supabase.co',
+        'https://fixture.invalid',
+        `${devSupabaseOrigin}:444`,
+      ])
+        assert.throws(() => readConfig({ ...env, ...mode, SUPABASE_URL }), {
+          code: 'configuration_unavailable',
+        });
+    }
+    for (const mode of [{ NODE_ENV: 'production' }, { VERCEL: '1' }])
+      assert.throws(() => readConfig({ ...env, ...mode, SUPABASE_URL: 'https://localhost:54321' }));
+  });
+  it('rejects operator credentials in the runtime and privileged keys under misleading public names', () => {
+    for (const extra of [
+      { SUPABASE_SERVICE_ROLE_KEY: 'fixture' },
+      { SUPABASE_SECRET_KEY: 'fixture' },
+      { SUPABASE_ACCESS_TOKEN: 'fixture' },
+      { SUPABASE_DB_PASSWORD: 'fixture' },
+      { VITE_SUPABASE_ANON_KEY: `sb_secret_${randomUUID()}` },
+      {
+        NEXT_PUBLIC_SUPABASE_KEY: `fixture.${Buffer.from(JSON.stringify({ role: 'service_role' })).toString('base64url')}.fixture`,
+      },
+    ])
+      assert.throws(() => readConfig({ ...env, ...extra }), { code: 'configuration_unavailable' });
+  });
   it('requires a valid origin and publishable key; no secret/service key fallback', () => {
-    assert.deepEqual(readConfig(env), config);
+    assert.deepEqual(readConfig(env), { ...config, supabase: devSupabaseOrigin });
     for (const e of [
       {},
       { ...env, SUPABASE_PUBLISHABLE_KEY: '' },

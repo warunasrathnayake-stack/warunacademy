@@ -71,7 +71,7 @@ paths['/webhooks/{provider}'] = {
 };
 const doc = {
   openapi: '3.1.0',
-  info: { title: 'academy-core · internal backend', version: '1.0.0' },
+  info: { title: 'Waruna Academy · internal backend', version: '1.0.0' },
   servers: [{ url: '/api/v1' }],
   security: [{ supabaseBearer: [] }],
   paths,

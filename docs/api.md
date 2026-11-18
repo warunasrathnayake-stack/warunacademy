@@ -1,4 +1,4 @@
-# Backend API v1
+# Waruna Academy · backend API v1
 
 [OpenAPI 3.1](openapi.json) is generated from the runtime route and Zod definitions (`npm run docs:api`). It describes methods, fields, validation, scopes, results and the error envelope. Base: `/api/v1`. This is **implemented source**, not a public base URL. No browser session is created by this backend.
 

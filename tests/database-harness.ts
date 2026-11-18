@@ -7,13 +7,23 @@ import { createServer } from 'node:net';
 import { once } from 'node:events';
 import type { AddressInfo } from 'node:net';
 
-// No DATABASE_URL option by design: this fixture must never target an existing database.
-export async function startDatabase() {
+async function freeLoopbackPort() {
   const probe = createServer().listen(0, '127.0.0.1');
   await once(probe, 'listening');
   const { port } = probe.address() as AddressInfo;
   await new Promise<void>((resolve, reject) => probe.close((e) => (e ? reject(e) : resolve())));
-  const directory = await mkdtemp(join(tmpdir(), 'academy-test-'));
+  return port;
+}
+
+// Synthetic clusters only. No DSN or existing database is ever accepted.
+export async function startDatabase() {
+  const socketOnly = process.platform !== 'win32';
+  // The fixture dependency creates a temporary initdb password file. Restrict this
+  // dedicated test process's file modes, including during the dependency's init.
+  if (socketOnly) process.umask(process.umask() | 0o077);
+  const port = socketOnly ? 5432 : await freeLoopbackPort();
+  const directory = await mkdtemp(join(socketOnly ? '/tmp' : tmpdir(), 'academy-test-'));
+  const host = socketOnly ? directory : '127.0.0.1';
   const db = new EmbeddedPostgres({
     databaseDir: join(directory, 'data'),
     port,
@@ -21,12 +31,14 @@ export async function startDatabase() {
     password: randomBytes(32).toString('hex'),
     authMethod: 'scram-sha-256',
     initdbFlags: ['--encoding=UTF8', '--locale=C'],
-    postgresFlags: ['-c', 'listen_addresses=127.0.0.1'],
+    postgresFlags: socketOnly
+      ? ['-c', 'listen_addresses=', '-k', directory, '-c', 'unix_socket_permissions=0700']
+      : ['-c', 'listen_addresses=127.0.0.1'],
     onLog() {},
     onError() {},
   });
   let running = false;
-  const owner = db.getPgClient('postgres', '127.0.0.1');
+  const owner = db.getPgClient('postgres', host);
   const stop = async () => {
     await owner.end();
     if (running) await db.stop();
@@ -54,7 +66,7 @@ export async function startDatabase() {
       values: unknown[] = [],
       aal = 'aal1',
     ) {
-      const c = db.getPgClient('postgres', '127.0.0.1');
+      const c = db.getPgClient('postgres', host);
       await c.connect();
       try {
         await c.query('begin');
