@@ -1,0 +1,515 @@
+ACADEMY DIGITAL ECOSYSTEM
+
+MASTER TECHNICAL ARCHITECTURE & INTEGRATION SPECIFICATION | V2.0
+
+Client brand: [ACADEMY NAME – PENDING CONFIRMATION]
+
+Science educator: Waruna Rathnayaka | Grades 6–11 | Sinhala-medium
+
+Technology & Digital Solutions Partner: CEYTEQ – Ceylon Technology
+
+Document status: V2.0 revised proposal • student cards & attendance added • provider approvals pending • not deployed
+
+Figure 1. Logical architecture; integrations are conditional on account eligibility and official provider permissions.
+
+01 | Executive scope & ownership
+
+Build a branded academy platform, not a CEYTEQ-branded public site. Public brand, domain, learning assets and student relationships belong to the academy under an agreed contract. CEYTEQ is implementation and operational technology partner. Agree in writing on IP ownership, domain registrar, cloud tenancy, data-controller/processor responsibilities, payment settlement, support, exit and handover.
+
+Primary capabilities: public website, science CMS/blog, social feed, student/guardian portal, digital library, LMS/live classes, CRM, marketing and ads integration, omnichannel messaging, payments, SMS, analytics and centralized operations. V2.0 scope adds physical student registration, printable student ID cards, QR/card scanning, attendance, renewal and migration from the incumbent provider.
+
+02 | Non-functional design principles
+
+Mobile-first, Sinhala-first; accessibility, low-bandwidth image/video strategies and SEO.
+
+Modular monolith with clear bounded modules and typed API contracts; background workers for asynchronous integrations.
+
+Least privilege, server-side authorization, private student data, guardian-consent workflows and auditable changes.
+
+Provider-agnostic adapters for payment, SMS, video and messaging; no direct API secrets in browser.
+
+MVP before advanced features; external API access, fees and eligibility must be verified before implementation.
+
+03 | Full sitemap & URL map
+
+Area | Routes / pages
+
+Public | /, /about, /classes, /classes/grade/[grade], /blog, /blog/[slug], /feed, /videos, /library, /library/[slug], /events, /reviews, /register, /contact, /privacy, /terms
+
+Auth | /login, /signup, /forgot-password, /auth/callback
+
+Student | /student, /student/classes, /student/library, /student/live, /student/recordings, /student/assignments, /student/progress, /student/profile
+
+Guardian | /guardian, /guardian/children, /guardian/fees, /guardian/messages
+
+Teacher | /teacher, /teacher/classes, /teacher/resources, /teacher/attendance, /teacher/assignments, /teacher/students
+
+Admin | /admin, /admin/content, /admin/media, /admin/students, /admin/classes, /admin/library, /admin/learning, /admin/crm, /admin/social, /admin/ads, /admin/ai, /admin/communications, /admin/payments, /admin/finance, /admin/feedback, /admin/analytics, /admin/users, /admin/settings
+
+
+
+04 | Frontend page specifications
+
+Page | Sections / features | Primary CTA
+
+Home | Teacher hero; science discovery; grades; featured blogs; latest videos; library preview; testimonials; FAQ | Explore classes / Register
+
+About | Verified qualifications; research; teaching philosophy; academic timeline | Contact
+
+Classes | Grade filters; timetable; venue; online/offline options; FAQs | Enroll
+
+Blog / Feed | SEO article; categories; social previews; related content; platform import with attribution | Read / Share
+
+Library | Search; grade/subject filters; access badges; PDF viewer; protected downloads | Sign in
+
+Contact / Register | Grade, guardian contact, consent, source tracking, spam protection | Submit enquiry
+
+Student portal | My classes; resources; assignments; recordings; progress; notifications | Continue learning
+
+
+
+05 | Admin modules and responsibilities
+
+Module | Capabilities
+
+Overview | KPIs, alerts, activity, daily report
+
+CMS | Pages, articles, taxonomy, SEO, publishing approval, revisions
+
+Media | Asset uploads, transcoding jobs, metadata, retention
+
+Academic | Grades, courses, groups, sessions, enrollment, attendance
+
+LMS | Live sessions, recordings, assessments, submissions, marks
+
+Library | Resources, entitlement rules, signed URLs, downloads
+
+CRM | Contacts, guardian/student linkage, leads, stages, follow-ups
+
+Social | Account OAuth, drafts, scheduling, post targets, sync logs
+
+Advertising | Authorized ad accounts, campaigns, insights, attribution
+
+Communications | Email, SMS, WhatsApp templates, delivery and opt-out
+
+AI Assistant | Approved knowledge, conversations, escalation, safety
+
+Payments | Invoices, orders, checkout, webhook verification, refunds
+
+Finance | Reconciliation, expenses, settlements, reports
+
+Analytics | Traffic, funnels, conversions, educational engagement
+
+Security | Roles, permissions, consent, audit, integration health
+
+
+
+06 | Technology stack & environments
+
+Layer | Preferred baseline | Notes
+
+Web / UI | Next.js, TypeScript, Tailwind | Server rendering for SEO; responsive Sinhala UI
+
+Backend | Next.js server APIs + service modules | Validation with Zod; rate limiting; webhook endpoints
+
+Database | Supabase PostgreSQL | Migrations, indexes, Row Level Security
+
+Identity | Supabase Auth | Email login; optional OTP; MFA for admins
+
+Storage | Supabase Storage | Public/private buckets, signed access
+
+Video | Zoom/YouTube initially; dedicated video provider later | Check recording, DRM and streaming costs
+
+Background jobs | Managed queue / scheduled workers | Retry, idempotency, dead-letter handling
+
+Hosting | Vercel + Supabase | Separate dev/staging/production projects
+
+Monitoring | Sentry + logs + uptime monitor | Avoid storing private message bodies in telemetry
+
+Analytics | GA4, Search Console, internal event tables | Consent-aware tracking
+
+Email | Transactional email provider | Domain SPF/DKIM/DMARC required
+
+AI | OpenAI API with retrieval over approved sources | Guardrails and human handoff
+
+
+
+07 | Database logical schema
+
+Domain | Tables
+
+Identity | profiles, roles, user_roles, permissions, role_permissions, consent_records, audit_logs
+
+Academic | students, guardians, student_guardians, grades, courses, class_groups, class_sessions, enrollments, attendance, assignments, submissions, assessments, assessment_attempts
+
+Content | pages, posts, post_categories, tags, post_tags, media_assets, content_revisions, events, feedback, testimonials
+
+Library / LMS | library_resources, resource_access_rules, resource_views, resource_downloads, video_lessons, live_sessions, lesson_recordings, resource_entitlements
+
+CRM | contacts, leads, lead_sources, lead_activities, form_submissions, lead_attributions
+
+Social / Ads | social_accounts, social_posts, social_post_targets, social_sync_events, ad_accounts, ad_campaigns, ad_metrics
+
+Messaging / AI | message_templates, outbound_messages, message_deliveries, conversations, messages, chatbot_configs, knowledge_documents, handoff_requests
+
+Commerce | products, prices, orders, order_items, invoices, payments, refunds, payment_webhook_events, payment_reconciliations
+
+Platform | integration_connections, integration_sync_jobs, webhook_events, notifications, system_settings
+
+
+
+Key relational rules
+
+auth.users 1:0..1 profiles; user_roles joins users and roles.
+
+contacts may be a guardian, parent or other lead; students are separate records; student_guardians is many-to-many.
+
+class_groups 1:N class_sessions; students N:M class_groups via enrollments; sessions N:M students via attendance.
+
+library_resources N:M access rules/entitlements; private resources require server-side entitlement checks.
+
+leads belong to contacts and may later link to an enrolled student; retain source attribution and consent.
+
+orders 1:N payments; payment gateway events are immutable and idempotently processed.
+
+external provider IDs must be unique per provider/account and stored separately from internal UUIDs.
+
+08 | API and token requirements register
+
+Integration | Credentials / access needed | Primary purpose / caveat
+
+Domain + DNS | Registrar admin; DNS access | Domain ownership, HTTPS, SPF/DKIM/DMARC
+
+Vercel | Project/team access; deployment token only if CI requires | Hosting and deployment; avoid personal credentials
+
+Supabase | Project URL, anon/publishable key, server secret/service role, DB connection secret | Service role strictly server-only
+
+Meta Facebook / Instagram | Meta app ID/secret; OAuth permissions; page/IG professional account access; tokens | Publishing, page messaging, leads and insights subject to review
+
+Meta Ads | Ad account ID; approved Marketing API scopes; system-user token where permitted | Campaign/insight operations; no assumption of unrestricted access
+
+WhatsApp Cloud API | Meta business/WABA ID, phone number ID, access token, verify token, app secret | Approved templates, opt-in, messaging windows and webhook verification
+
+YouTube | Google Cloud OAuth client; authorized channel; YouTube Data API scopes | Upload and channel metadata; quotas and review
+
+TikTok | Developer app OAuth credentials and approved posting scopes | Direct posting subject to eligibility/review
+
+Payments | Merchant ID, public key if provided, server secret, webhook signing secret | Select Sri Lanka-compatible merchant provider after verification
+
+SMS | Provider account, API key, sender ID approval, delivery callback secret | Local SMS pricing, sender rules and consent
+
+Email | Provider API key, verified sending domain | Transactional and notification email
+
+OpenAI | Project API key, model configuration, usage budgets | Knowledge-grounded assistant; privacy safeguards
+
+Live video | Provider OAuth/API credentials or meeting integration | Recording consent and access controls
+
+Analytics | GA4 property, GTM container if used, Search Console access | Respect consent and child-data restrictions
+
+
+
+Secret-handling policy
+
+Never put access tokens, payment secrets, WhatsApp tokens, service-role keys or OAuth client secrets in public source code, screenshots, shared documents or frontend environment variables. Use managed encrypted environment secrets; assign least privilege; rotate and revoke on staff changes; log secret access. This document specifies credential TYPES only and contains no real credentials.
+
+09 | Integration and webhook architecture
+
+Every external callback enters a dedicated HTTPS webhook endpoint. Verify signature/HMAC when supported; reject invalid payloads; persist provider event ID; enqueue asynchronous processing; deduplicate; retry with backoff; send exhausted failures to dead-letter review. Return successful acknowledgement promptly. Never trust browser-side payment status as proof of settlement.
+
+Workflow | Input → processing → result
+
+Website registration | Form → validation + consent → contact/lead → staff alert → enrollment review
+
+Meta lead form | Lead webhook → authorized retrieval → dedupe → CRM lead → follow-up
+
+WhatsApp | Inbound webhook → opt-in/context check → chatbot or human → reply via official API
+
+SMS | Admin/trigger → approved template → provider → delivery callback → audit
+
+Payment | Checkout initiation → hosted payment page → verified webhook → invoice/payment update → receipt/access
+
+Social publish | Approved content → per-platform job → OAuth refresh → API publish → result/sync log
+
+Live class | Scheduled class → meeting creation/link → entitlement check → attendance → recording link
+
+
+
+10 | Payments architecture
+
+Provider selection remains OPEN. Evaluate Sri Lanka merchant onboarding, supported cards and local payment methods, recurring billing, fees, refunds, settlement currency, webhooks, sandbox, reconciliation and data protection. Use hosted checkout to minimize card-data scope; do not store card numbers/CVV. Payment states: draft → pending → paid/failed/expired/refunded; grant paid entitlement only after verified server-side confirmation. Handle duplicate, delayed and out-of-order webhooks.
+
+11 | SMS, WhatsApp and communications
+
+Implement a communication abstraction with channels: email, SMS, WhatsApp and in-app. Maintain per-recipient preferences, opt-in evidence, template ID, language, provider message ID, send status, error code, rate limits and unsubscribe/opt-out handling. For minors, default operational communication to verified guardians where appropriate. WhatsApp Business Platform requires business setup, permitted templates, opt-in and applicable conversation rules; do not assume all outbound messages are allowed.
+
+12 | Social publishing and advertising constraints
+
+Website-first content remains canonical for SEO. Social publishing uses individual provider adapters and approved OAuth flows. Some platform capabilities require professional/business accounts, app review, rate limits, publishing quotas and user authorization. Facebook feed embedding/import is not guaranteed to be real-time. Advertising actions require specific permissions and explicit operator approval; campaign changes and spend must have confirmation gates.
+
+13 | AI assistant and knowledge governance
+
+Approved knowledge: class timetable, verified teacher profile, public FAQs, selected library resources, policies.
+
+Retrieve relevant documents and cite internal source IDs where practical; avoid fabricating fees, schedules or grades.
+
+No automatic disclosure of student progress, payment or guardian data without authenticated authorization.
+
+Escalate uncertain, sensitive or account-specific requests to a human; record handoff status.
+
+Define retention, moderation, prompt-injection defenses, spend limits and model fallback behavior.
+
+14 | Security, privacy and child-safety requirements
+
+Role-based access and PostgreSQL RLS; no public student records; private media signed URLs.
+
+Guardian consent and age-appropriate account onboarding; privacy notices, data minimization and deletion requests.
+
+Sri Lanka Personal Data Protection Act applicability and current compliance requirements to be reviewed by qualified counsel.
+
+Admin MFA, secure cookies, CSRF protections, input validation, upload scanning, rate limiting, anti-spam and abuse controls.
+
+HTTPS, encrypted backups, retention schedules, access reviews, breach-response procedure and audit logs.
+
+Separate development, staging and production credentials; restore drills and disaster-recovery runbook.
+
+15 | DevOps and deployment architecture
+
+GitHub repository with protected main branch; pull-request reviews; automated lint/typecheck/unit tests; database migration review; staging preview; production release approval. Environments: development (test integrations), staging (sandbox credentials and sample data), production (live credentials and guarded writes). Monitoring includes latency, job failures, payment discrepancies, webhook failures, storage and API spend.
+
+16 | API endpoint blueprint
+
+Group | Representative endpoints
+
+Public | GET /api/posts, GET /api/classes, POST /api/enquiries
+
+Auth | Supabase Auth flows; POST /api/guardian/consent
+
+Learning | GET /api/me/classes, GET /api/resources/[id]/access, POST /api/assignments/[id]/submit
+
+CRM | GET/POST /api/admin/leads, PATCH /api/admin/leads/[id]
+
+Publishing | POST /api/admin/social/jobs, GET /api/admin/social/jobs/[id]
+
+Payments | POST /api/checkout/session, POST /api/webhooks/payments/[provider]
+
+Messaging | POST /api/admin/messages/send, POST /api/webhooks/whatsapp, POST /api/webhooks/sms
+
+Providers | GET /api/integrations/[provider]/callback, POST /api/webhooks/meta
+
+AI | POST /api/chat, POST /api/admin/knowledge/reindex
+
+
+
+All routes are proposed contracts; exact methods, schemas, validation, auth policies and provider callback URLs must be finalized during implementation.
+
+17 | Rollout plan and acceptance gates
+
+Phase | Delivery | Go-live gate
+
+P1 Foundation | Public website, CMS, registration, core auth, basic CRM | Mobile/SEO, form-to-CRM, permissions, backup verified
+
+P2 Learning | Students, guardians, classes, library, resource entitlements | Student isolation, secure files, guardian workflow
+
+P3 Integrations | Social, Meta leads, email/SMS/WhatsApp, AI pilot | Provider approvals, webhook signatures, opt-in tests
+
+P4 Commerce + LMS | Payment gateway, invoices, live classes, recordings | Sandbox-to-live settlement test, class access test
+
+P5 Operations | Finance, reporting, scale, mobile API readiness | Load, restore, audit, monitoring and handover
+
+
+
+18 | Vendor decision log / open items
+
+Decision | Current status / owner
+
+Official academy name and domain | Pending Waruna Sir confirmation
+
+Legal agreement and CEYTEQ responsibilities | Pending client/CEYTEQ approval
+
+Payment provider and merchant account | Evaluate eligible Sri Lankan providers
+
+SMS gateway and sender ID | Select and validate with provider
+
+WhatsApp Business account | Determine business ownership and onboarding
+
+Social OAuth apps and approval | Platform review/permissions to confirm
+
+Video provider and storage budget | Evaluate cost, recording and access control
+
+Hosting and database ownership | Agree tenancy and handover model
+
+Pricing, free/premium access and class fees | Academy business decision
+
+Privacy/consent/legal review | Required before student data production use
+
+
+
+19 | Handover checklist
+
+Architecture diagram and this specification; final sitemap and UI design system.
+
+Database ERD, migration scripts, seed data, RLS policies and data dictionary.
+
+OpenAPI specification, webhook contracts, retry/idempotency policies and integration test results.
+
+Credential inventory (names/owners/rotation dates only), not raw secrets.
+
+Infrastructure ownership, DNS records, environments, deployment and rollback runbooks.
+
+Backup/restore evidence, monitoring dashboards, incident response and support SLA.
+
+Client admin training, documentation, source-code access and agreed exit/handover process.
+
+20 | Next design deliverables
+
+Recommended follow-on charts: (1) detailed database ERD; (2) role/permission matrix; (3) student journey and registration funnel; (4) CMS-to-social publishing workflow; (5) payment sequence; (6) WhatsApp/SMS chatbot routing; (7) admin dashboard wireframes; (8) deployment and security topology. This document establishes the master blueprint before those detailed charts are produced.
+
+21 | V2.0 change control & revised solution scope
+
+New mandatory business capability: Academy-owned student admission, registration, physical/digital student card issuance, card scanning and attendance recording. This replaces an incumbent outsourced service only after verified migration and parallel testing. Existing public website, LMS, CRM, marketing, chatbot, payment, SMS and WhatsApp modules remain in scope.
+
+Brand ownership: Academy name and domain pending client confirmation. CEYTEQ provides solution design, development, deployment and optional ongoing operations under a written partnership/service agreement. Define account ownership, source-code IP, data controller/processor duties, support SLAs and exit rights in that agreement.
+
+22 | Revised UI/UX design tokens & components
+
+Token | Proposed value | Use
+
+Light Ash | #F0F0ED | Primary app/page background
+
+Olive Green | #667747 | Navigation, primary CTA, success accents
+
+Black | #171916 | Primary text, headings
+
+Muted Red | #B0443D | Warnings, urgent highlights, errors only
+
+White | #FFFFFF | Cards, forms and elevated surfaces
+
+Olive Light | #E2E5DC | Selected states, soft panels
+
+
+
+UI style: minimalist, light ash base, olive navigation/actions, black typography, restrained red highlights. Use Noto Sans Sinhala with suitable Latin companion. Meet WCAG AA contrast targets; validate actual token pairings and do not rely on red/green alone for status. Provide mobile-first pages, large scan buttons, loading/error/empty states and printer-friendly card layouts.
+
+Core UI components: public header/hero/cards; responsive admin sidebar/topbar; role-aware tables, filters, bulk actions; student admission wizard; card preview/print; scan console; attendance roster; manual correction dialog; exception queue; daily reports; SMS/WhatsApp notification templates.
+
+23 | Student registration, card issuing & attendance system
+
+Submodule | Key operations | Required control
+
+Admission | Create student, link guardians, grade, class and consent | Duplicate detection; guardian consent
+
+Student card | Unique card ID, QR payload, print/reprint, issue/revoke/expire | Opaque signed/random token; never embed PII
+
+Card scanning | Phone camera / USB scanner / dedicated reader | Authenticated scanner operator; device registration
+
+Attendance | Validate enrollment and scheduled session; mark present/late | Idempotent scans; anti-replay/time window
+
+Exceptions | Lost card, no card, offline, wrong class, duplicate scan | Manual override with reason + audit
+
+Notifications | Optional arrival/attendance messages to guardians | Opt-in and delivery logs
+
+Reporting | Session roster, absences, monthly summaries, export | Role and retention controls
+
+
+
+Card format: print-ready academy branding, student name, student code, grade/class, validity and QR code. Avoid printing sensitive personal data. QR should resolve to a server-validated opaque card identifier, not a phone number, national ID or student profile URL. Card status: draft → issued → active → suspended/lost → revoked/expired. Reprints rotate the token and invalidate old cards.
+
+Scanning workflow: operator selects class session (or device is bound to it), scans QR, server validates card + student + enrollment + time window, writes immutable scan event, upserts one attendance record per student/session, returns success/duplicate/error. Offline mode is optional; encrypted queued scans require conflict resolution and clock-skew handling. A QR card alone is not strong proof of physical presence; supervised scanning and anomaly monitoring are needed.
+
+Suggested roles: Admissions Officer, Attendance Operator, Teacher, Academy Manager, Super Admin. Students and guardians may view only their own card and attendance history. Card issuance, overrides, exports and bulk imports require separate privileges.
+
+24 | V2.0 database additions & relationship design
+
+Table | Important columns / relations
+
+student_cards | id, student_id FK, token_hash UNIQUE, status, issued_at, expires_at, revoked_at, issued_by
+
+card_print_jobs | id, card_id FK, template_version, requested_by, printed_at, status
+
+attendance_devices | id, label, assigned_location, status, last_seen_at
+
+scan_events | id, device_id FK, card_id nullable FK, session_id FK, operator_id, scan_at, result, request_id UNIQUE
+
+attendance_records | id, student_id FK, session_id FK, status, marked_at, source, marked_by; UNIQUE(student_id, session_id)
+
+attendance_adjustments | id, attendance_id FK, before_status, after_status, reason, actor_id, created_at
+
+student_import_batches | id, source_vendor, imported_by, file_hash, status, created_at
+
+student_import_rows | id, batch_id FK, external_id, mapped_student_id, validation_status, error_details
+
+card_templates | id, name, dimensions, branding_config, version, active
+
+attendance_notification_jobs | id, attendance_id FK, channel, recipient_id, status, sent_at
+
+
+
+Relationship summary: guardians ↔ student_guardians ↔ students → enrollments → class_groups → class_sessions. students → student_cards; student_cards → scan_events; class_sessions + students → attendance_records; attendance_records → attendance_adjustments. Preserve original import IDs in a separate crosswalk to avoid collisions. Add tenant_id only if the academy platform will serve multiple independent institutions.
+
+Indexes: attendance_records(session_id, status), scan_events(session_id, scan_at), student_cards(student_id, status), student_import_rows(batch_id, validation_status). Apply RLS, server-side permission checks, retention rules and data minimization. Scan event writes and attendance updates must be transactional and idempotent.
+
+25 | API endpoints, integrations & credential register additions
+
+Endpoint / integration | Purpose | Authentication / secret
+
+POST /api/admissions | Create student + guardian + enrollment | Admissions role, CSRF and validation
+
+POST /api/cards/issue | Issue signed/opaque card token | Card issuer role; server secret
+
+POST /api/cards/revoke | Revoke lost/replaced card | Card issuer role + audit
+
+GET /api/cards/:id/print | Render printable card | Authorized staff; no public PII
+
+POST /api/attendance/scan | Validate scan and record event | Staff session + registered device
+
+POST /api/attendance/override | Manual attendance correction | Teacher/admin role + reason
+
+GET /api/attendance/reports | Attendance reports/export | Scoped staff permission
+
+POST /api/imports/students | Upload vendor export to staging | Super admin + secure file upload
+
+SMS gateway | Attendance alerts / registration OTP | Provider API key + sender approval
+
+WhatsApp Business Platform | Approved templates / guardian notices | Meta access token, phone number ID, webhook verify token
+
+Payment gateway | Fees, webhooks and reconciliation | Merchant credentials, webhook signature verification
+
+GitHub / Vercel / Supabase | CI/CD, deploy, database migration | Scoped service credentials, no shared personal OTP
+
+
+
+Credential checklist (never place actual secrets in this document): Supabase URL and publishable key; server-side service-role key; database connection credentials; Vercel project/team IDs and environment variables; GitHub repository and deployment permissions; Meta app ID/app secret, page IDs and access tokens subject to review; WhatsApp Business Account and phone number IDs, system-user token, webhook verification secret; SMS provider key/sender ID; payment merchant ID, secret and webhook signing key; live-video provider OAuth credentials; AI provider key; email SMTP credentials; analytics IDs. Maintain separate dev/staging/prod secrets, owner, scope, rotation date and status for each.
+
+Integration restrictions: Meta publishing/messaging, WhatsApp templates, payment processors, SMS sender IDs and live video capabilities require vendor-specific approvals and eligibility. Never treat a connected account as proof of production permission. Use official OAuth where available and do not bypass OTP or MFA.
+
+26 | Outsourced student system migration & go-live gates
+
+Stage | Deliverable / acceptance gate
+
+Discovery | Obtain current vendor export/API options, contract rights, field dictionary, card formats and attendance rules
+
+Data mapping | Map students, guardians, grade, classes, historic attendance, card IDs and duplicate handling
+
+Staging import | Import sample data into isolated staging; validate counts, links, consent and dates
+
+Card pilot | Print/test QR cards on phone/USB scanners, revoked cards, duplicates, offline and poor connectivity
+
+Parallel run | Run old and new attendance workflows for agreed sessions; reconcile discrepancies
+
+Cutover | Approve signed-off reconciliation, staff training, support plan, rollback and secure data transfer
+
+Post-launch | Monitor scans, sync failures, notifications, backups, audit and vendor decommissioning
+
+
+
+Go-live acceptance: no student/guardian records lost; verified card-to-student mapping; duplicate scans do not create duplicate attendance; revoked cards fail; unauthorized operators cannot view student data; attendance correction audit is complete; backups/restores tested; parent messaging opt-in respected; production secret management verified.
+
+27 | Updated architecture diagram
+
+Figure 2. V2.0 logical architecture includes academy-owned student registration, QR cards and attendance. Integration adapters are conceptual and subject to vendor permissions.
+
+28 | Revised delivery sequence & pending decisions
+
+Phase 1: public website, CMS, auth, admission/registration, basic CRM and initial student records. Phase 2: card templates, QR issuance, attendance console, scan devices, vendor migration and reports. Phase 3: digital library and LMS. Phase 4: payments, SMS, WhatsApp, social and ads integrations. Phase 5: advanced AI, analytics, finance and expansion. Prioritize card/attendance rollout earlier if the current outsourced service contract is ending.
+
+Pending client confirmations: academy official name/domain, existing vendor name and export access, card type (QR vs NFC/RFID), scanner hardware, student volumes, card printing method, attendance rules, guardian messaging consent, preferred payment/SMS providers, ownership and hosting agreement, and whether legacy attendance history must be migrated.
