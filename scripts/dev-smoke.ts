@@ -3,12 +3,10 @@
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
-import { readConfig } from '../src/platform/config.js';
+import { devProjectRef, devSupabaseOrigin, readConfig } from '../src/platform/config.js';
 import { createHandler } from '../src/platform/http.js';
 import { SupabaseGateway } from '../src/platform/supabase.js';
 
-const ref = 'visphgkumgwnrajatidh';
-const target = `https://${ref}.supabase.co`;
 const classLabel = 'Synthetic commissioning';
 const identities = {
   admissions_officer: 'DEV_ADMISSIONS_JWT',
@@ -49,7 +47,7 @@ export async function devSmoke(
     'Operator development run only.',
   );
   requireCheck(
-    env.DEV_WRITE_REF === ref && env.SUPABASE_URL === target,
+    env.DEV_WRITE_REF === devProjectRef && env.SUPABASE_URL === devSupabaseOrigin,
     'Wrong or missing dedicated dev target/acknowledgement.',
   );
   requireCheck(env.DEV_RECOVERY_TICKET?.trim(), 'Verified recovery ticket required.');

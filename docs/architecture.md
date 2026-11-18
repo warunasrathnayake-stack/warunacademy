@@ -1,6 +1,6 @@
 # Architecture decision record · foundation
 
-**Primary specification:** [Master Technical Architecture & Integration Specification V2.0](spec/master-architecture-v2.txt), preserved byte-for-byte from the supplied attachment. SHA-256: `d749d4071669340301400d1a43c1e0a2948773e4645a6857ce77c6091909fc47`. An implementation note cannot silently supersede the proposal. Record material changes and obtain approval from the academy and its authorized development lead. `academy-core` is a private working identifier, not a brand or domain recommendation.
+**Primary specification:** [Master Technical Architecture & Integration Specification V2.0](spec/master-architecture-v2.txt), preserved byte-for-byte from the supplied attachment. SHA-256: `d749d4071669340301400d1a43c1e0a2948773e4645a6857ce77c6091909fc47`. An implementation note cannot silently supersede the proposal. Record material changes and obtain approval from the academy and its authorized development lead. Waruna Academy is the project-facing name; `academy-core` is the internal identifier. This does not establish a production domain.
 
 ## What is being built
 

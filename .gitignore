@@ -4,6 +4,7 @@ node_modules/
 .vercel/
 supabase/.temp/
 supabase/.branches/
+supabase/.link.json
 coverage/
 dist/
 *.log
@@ -14,4 +15,16 @@ private-data/
 *.key
 *.p12
 *.csv
-!tests/fixtures/*.csv
+# Operator recovery files are never project inputs (even under tests/fixtures).
+.pgpass
+.pg_service.conf
+pgpass.conf
+pg_service.conf
+roles.sql
+schema.sql
+data.sql
+history_schema.sql
+history_data.sql
+*.sql.gz
+*.dump.gz
+*.backup.gz

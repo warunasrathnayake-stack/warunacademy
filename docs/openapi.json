@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "academy-core · internal backend",
+    "title": "Waruna Academy · internal backend",
     "version": "1.0.0"
   },
   "servers": [

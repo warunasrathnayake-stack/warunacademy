@@ -201,6 +201,8 @@ describe('Disposable PostgreSQL 17 · synthetic records, Supabase schema fixture
 
   it('all migrations apply; every private table uses RLS; RPC catalog matches versioned contracts', async () => {
     assert.equal(db.migrations.length, 6);
+    const [listener] = await owner('show listen_addresses');
+    assert.equal(listener!.listen_addresses, process.platform === 'win32' ? '127.0.0.1' : '');
     assert.deepEqual(
       await owner("select tablename from pg_tables where schemaname='academy' and not rowsecurity"),
       [],
