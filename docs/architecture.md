@@ -1,12 +1,12 @@
 # Architecture decision record · foundation
 
-**Primary specification:** [Master Technical Architecture & Integration Specification V2.0](spec/master-architecture-v2.txt), preserved byte-for-byte from the supplied attachment. SHA-256: `d749d4071669340301400d1a43c1e0a2948773e4645a6857ce77c6091909fc47`. An implementation note cannot silently supersede the proposal. Record material changes and obtain academy/CEYTEQ approval. `academy-core` is a private working identifier, not a brand or domain recommendation.
+**Primary specification:** [Master Technical Architecture & Integration Specification V2.0](spec/master-architecture-v2.txt), preserved byte-for-byte from the supplied attachment. SHA-256: `d749d4071669340301400d1a43c1e0a2948773e4645a6857ce77c6091909fc47`. An implementation note cannot silently supersede the proposal. Record material changes and obtain approval from the academy and its authorized development lead. `academy-core` is a private working identifier, not a brand or domain recommendation.
 
 ## What is being built
 
 One academy's digital education and management platform for a Sinhala-medium science educator, grades 6–11. Sections 1–6 and 21–22 cover academy ownership, public website, SEO blog/social feed, registration, accessible low-bandwidth student/guardian/teacher portals and admin operations. Sections 7–16 and 23–25 define data, security, integrations, cards, attendance and contracts. Sections 17–20 and 26–28 require gated rollout, incumbent reconciliation and handover. The revised sequence puts admission, cards and supervised attendance **before** broader LMS and external automation. No public surface or frontend is part of this implementation.
 
-The academy owns its student relationships, brand, domain and assets subject to agreement; CEYTEQ is the technology partner. IP, controller/processor duties, cloud tenancy, billing/settlement, support, exit rights, source handover and data residency are unresolved. Do not infer a tenancy from a login. No `tenant_id`: one institution per approved project. Serving a second institution requires a reviewed tenancy design first.
+The academy owns its student relationships, brand, domain and assets subject to agreement. IP, controller/processor duties, cloud tenancy, billing/settlement, support, exit rights, source handover and data residency are unresolved. Do not infer a tenancy from a login. No `tenant_id`: one institution per approved project. Serving a second institution requires a reviewed tenancy design first.
 
 ## System boundary
 

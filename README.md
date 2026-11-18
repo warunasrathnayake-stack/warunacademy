@@ -1,6 +1,6 @@
 # academy-core · backend foundation
 
-Internal identifier only. CEYTEQ – Ceylon Technology is the development and management partner for Waruna Rathnayaka. The dedicated development tenant is confirmed; the public name, domain and production tenancy are not. This repository contains a TypeScript server API and Supabase/PostgreSQL migrations for **one** academy. It has no frontend and no enabled external provider. The [supplied Master Technical Architecture V2.0](docs/spec/master-architecture-v2.txt) is the primary specification.
+Internal backend for Waruna Rathnayaka’s academy. Use `academy-core` and role names (academy owner, development operator) in project reports and tasks. The dedicated development tenant is confirmed; the public name, domain and production tenancy are not. This repository contains a TypeScript server API and Supabase/PostgreSQL migrations for **one** academy. It has no frontend and no enabled external provider. The [supplied Master Technical Architecture V2.0](docs/spec/master-architecture-v2.txt) is the primary specification.
 
 **Start here:** [current development commissioning status and recovery gate](docs/development-commissioning.md) · [original foundation report](docs/foundation-report.md) · [API contracts](docs/api.md) · [local setup, security and commissioning](docs/security-operations.md).
 
