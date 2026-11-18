@@ -1,0 +1,15 @@
+# Incumbent replacement — explicit hold
+
+**BLOCKED:** vendor, export/API rights, file dictionary, volumes, historic attendance scope, consent and mapping have not been confirmed. No external system was contacted. No upload/import endpoint or file reader is enabled; the DB design is not authorization to import. Do not email exports, use shared drives/chat as staging, copy live data into tests, or attempt to recover missing data through unofficial access.
+
+| Gate | Required evidence | Stop conditions |
+|---|---|---|
+| 1. Discovery | Academy + provider written right to export/transfer; owner, encrypted channel, data dictionary, charset/Sinhala, dates/timezone, legacy card type, coverage and retention | Unknown controller, missing consent or shared tenant; no extraction |
+| 2. Mapping | Versioned source-to-target dictionary and **synthetic** sample. Map vendor student ID → scoped crosswalk; guardians ↔ children; grade/course/group → term; historic scan/session/date/status and correction semantics; reconcile existing card formats and validity | Never key by phone/name alone; resolve ambiguous siblings/guardians, invalid grades/dates, duplicate IDs and unknown old cards manually |
+| 3. Staging | Dedicated isolated approved project; private quarantine, malware scan, file SHA-256, batch owner/source, expected counts. Validate rows before apply. Minimize PII; track row-level error **codes**, reviewed mappings, consent and authorizer, not raw rows in logs | Reject second source/file hash; no silent overwrites or unreviewed links |
+| 4. Crosswalk & pilot | Keep `(source_vendor,external_id)` separate from internal UUID/code; FK binds the mapped student to the actual batch row. Issue new opaque QR credentials (do not import old token secrets). Pilot print/reprint/revoke/expiry on authorized phone/USB readers | Unverified card-to-student match, unsupported offline flow or failed class/window tests |
+| 5. Parallel run | For agreed classes/dates keep incumbent authoritative; compare totals **and individual links**, present/late/absent/unknown, duplicates, manual corrections; reconcile discrepancies with signed exception list | No unexplained missing/extra students, guardians or events. No double messages or double charges |
+| 6. Cutover | Client signs reconciliation, backup/restore proof, operator training, support/rollback window, retention/deletion schedule, hardware and privacy controls. Freeze old writes at agreed point, transfer any authorized delta and verify counts again | If reconciliation fails, stop new writes, use incumbent and reviewed restore/replay plan; no destructive rollback |
+| 7. Handover | Monitor scans/access and incidents, transfer account ownership, documented export/exit path, controlled expiry of temporary files and authorized decommission | Do not terminate incumbent or destroy historical evidence before owner approval |
+
+Training/UI, card layout/printing, NFC/RFID, offline encrypted queue/conflict resolution and guardian notices are separate work. A lost/no-card exception can be recorded by an authorized staff correction with a reason; do not bypass device authentication to simulate offline mode.
