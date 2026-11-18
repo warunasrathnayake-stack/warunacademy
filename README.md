@@ -1,8 +1,8 @@
 # academy-core · backend foundation
 
-Internal identifier only. The academy's public name, domain and deployment tenancy are unconfirmed. This repository contains a TypeScript server API and Supabase/PostgreSQL migrations for **one** academy. It has no frontend and no enabled external provider. The [supplied Master Technical Architecture V2.0](docs/spec/master-architecture-v2.txt) is the primary specification.
+Internal identifier only. CEYTEQ – Ceylon Technology is the development and management partner for Waruna Rathnayaka. The dedicated development tenant is confirmed; the public name, domain and production tenancy are not. This repository contains a TypeScript server API and Supabase/PostgreSQL migrations for **one** academy. It has no frontend and no enabled external provider. The [supplied Master Technical Architecture V2.0](docs/spec/master-architecture-v2.txt) is the primary specification.
 
-**Start here:** [execution report and decisions needed](docs/foundation-report.md) · [API contracts](docs/api.md) · [local setup, security and commissioning](docs/security-operations.md).
+**Start here:** [current development commissioning status and recovery gate](docs/development-commissioning.md) · [original foundation report](docs/foundation-report.md) · [API contracts](docs/api.md) · [local setup, security and commissioning](docs/security-operations.md).
 
 ## Verify without credentials
 
@@ -17,6 +17,7 @@ This runs ESLint, formatting checks, strict TypeScript checks, synthetic tests a
 
 | Task | Command |
 |---|---|
+| Preview the post-migration synthetic smoke plan (offline) | `npm run dev:smoke -- --plan` |
 | Database/authorization tests only | `npm run test:db` |
 | All tests (including HTTP, environment and Node entry point) | `npm test` |
 | Regenerate [OpenAPI 3.1](docs/openapi.json) from runtime contracts | `npm run docs:api` |

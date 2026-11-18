@@ -15,7 +15,8 @@
     "check": "npm run lint && npm run format:check && npm run typecheck && npm test && tsx scripts/openapi.ts --check && tsx scripts/schema.ts --check",
     "lint": "eslint src api tests scripts",
     "format:check": "prettier --check src api tests scripts",
-    "docs:schema": "tsx scripts/schema.ts"
+    "docs:schema": "tsx scripts/schema.ts",
+    "dev:smoke": "tsx scripts/dev-smoke.ts"
   },
   "dependencies": {
     "zod": "4.6.7"

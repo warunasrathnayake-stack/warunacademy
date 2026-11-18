@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import { devSmoke } from '../scripts/dev-smoke.js';
 import { before, after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -672,6 +674,91 @@ describe('Disposable PostgreSQL 17 · synthetic records, Supabase schema fixture
       { code: '23503' },
     );
     await assert.rejects(owner('delete from academy.webhook_events'), { code: '55000' });
+  });
+  it('rehearses the commissioning catalog and smoke flow on disposable PostgreSQL; no network', async () => {
+    const inventory = (await owner(await readFile('scripts/dev-catalog.sql', 'utf8')))[0];
+    assert.deepEqual(inventory, {
+      app_schemas: 2,
+      app_tables: 89,
+      tables_missing_rls: 0,
+      client_writable_tables: 0,
+      rpc_functions: 30,
+      anon_executable_rpcs: 0,
+      auth_users: Object.keys(u).length,
+      active_profile_triggers: 1,
+      matching_private_buckets: 2,
+      storage_objects_rls: true,
+      storage_object_policies: 1,
+    });
+    await owner("update academy.class_groups set label='Synthetic commissioning' where id=$1", [
+      g1,
+    ]);
+    // Non-signing fixture identities only. Never provide a hosted token to this test.
+    const token = (subject: string) => `fixture.${subject}.unsigned`;
+    const env = {
+      SUPABASE_URL: 'https://visphgkumgwnrajatidh.supabase.co',
+      API_ORIGIN: 'https://runner.invalid',
+      SUPABASE_PUBLISHABLE_KEY: `sb_publishable_${uuid()}`,
+      DEV_RECOVERY_TICKET: 'disposable-fixture',
+      DEV_WRITE_REF: 'visphgkumgwnrajatidh',
+      DEV_RUN_ID: uuid(),
+      DEV_GROUP_ID: g1,
+      DEV_DEVICE_ID: d1,
+      DEV_SESSION_ID: ses,
+      DEV_OTHER_STUDENT_ID: b.student_id,
+      DEV_ADMISSIONS_JWT: token(u.admit),
+      DEV_CARD_ISSUER_JWT: token(u.issuer),
+      DEV_SCAN_OPERATOR_JWT: token(u.op),
+      DEV_OTHER_GUARDIAN_JWT: token(u.guardianB),
+    };
+    const transport: typeof fetch = async (input, init) => {
+      const url = new URL(String(input));
+      assert.equal(url.origin, env.SUPABASE_URL);
+      const headers = new Headers(init?.headers);
+      const user = [u.admit, u.issuer, u.op, u.guardianB].find(
+        (user) => 'Bearer ' + token(user) === headers.get('authorization'),
+      );
+      assert.ok(user);
+      if (url.pathname === '/auth/v1/user')
+        return Response.json({ id: user, email_confirmed_at: 'fixture' });
+      const rpc = url.pathname.split('/').at(-1)!;
+      assert.ok(routes.some((r) => r.rpc === rpc));
+      assert.equal(headers.get('content-profile'), 'academy_api');
+      const args = JSON.parse(String(init?.body));
+      const keys = Object.keys(args);
+      assert.ok(keys.every((k) => /^p_[a-z_]+$/.test(k)));
+      const invocation = `academy_api.${rpc}(${keys.map((k, i) => `${k} => $${i + 1}`).join(',')})`;
+      const isList = [
+        'guardians',
+        'classes',
+        'sessions',
+        'enrollments',
+        'history',
+        'cards',
+      ].includes(rpc);
+      try {
+        const rows = await db.queryAs(
+          user,
+          isList
+            ? `select to_jsonb(r) as value from ${invocation} r`
+            : `select ${invocation} as value`,
+          Object.values(args),
+        );
+        return Response.json(isList ? rows.map((r) => r.value) : rows[0]!.value);
+      } catch (error) {
+        if ((error as { code?: string }).code === '23505')
+          return Response.json({ code: '23505' }, { status: 409 });
+        throw error;
+      }
+    };
+    await devSmoke(['--run'], env, transport, () => {});
+    const [result] = await owner(
+      `select (select count(*)::int from academy.attendance_records a where a.student_id=r.student_id) marks,
+      (select count(*)::int from academy.student_cards c where c.student_id=r.student_id and c.status='active') active_cards
+      from academy.registrations r where r.request_id=$1`,
+      [env.DEV_RUN_ID],
+    );
+    assert.deepEqual(result, { marks: 1, active_cards: 0 });
   });
   it('privileged write quota applies inside Postgres, not just in the HTTP handler', async () => {
     await owner(
